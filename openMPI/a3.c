@@ -1,0 +1,49 @@
+#include <stdio.h>
+#include "mpi.h"
+
+#define NUMBER_OF_THREADS 10
+#define MASTER_PROCESS 0
+int main(int argc,char *argv[])
+{
+    int my_rank, world_size, val, newnum, sum = 0;
+    MPI_Status status;
+    int arr[NUMBER_OF_THREADS] = {23,12,73,53,4,32,234,36,43,93};
+    
+
+    MPI_Init(&argc,&argv);
+    
+    MPI_Comm_size(MPI_COMM_WORLD,&world_size);
+    MPI_Comm_rank(MPI_COMM_WORLD,&my_rank);
+
+    if(my_rank == MASTER_PROCESS){
+        printf("Array: ");
+        for(int i = 0; i < NUMBER_OF_THREADS; i++)
+            printf(" %d", arr[i]);
+        printf("\n");
+    }
+    if(world_size != NUMBER_OF_THREADS){
+        printf("Please set number of threads as %d", NUMBER_OF_THREADS);
+        return -1;
+    }
+    if(my_rank == MASTER_PROCESS){
+        MPI_Send(&arr[my_rank], 1, MPI_INT, my_rank+1, 0, MPI_COMM_WORLD);
+    }
+    else if(my_rank == NUMBER_OF_THREADS-1){
+        MPI_Recv(&val, 1, MPI_INT, my_rank-1, 0, MPI_COMM_WORLD, &status);
+        arr[my_rank] += val;
+    }
+    else{
+        MPI_Recv(&val, 1, MPI_INT, my_rank-1, 0, MPI_COMM_WORLD, &status);
+        arr[my_rank] += val;
+        MPI_Send(&arr[my_rank], 1, MPI_INT, my_rank+1, 0, MPI_COMM_WORLD);
+    }
+    if(my_rank == NUMBER_OF_THREADS-1){
+        printf("Prefix calculations: ");
+        for(int i = 0; i < NUMBER_OF_THREADS; i++)
+            printf(" %d", arr[i]);
+        printf("\n");
+    }
+    MPI_Finalize();
+    
+}
+
