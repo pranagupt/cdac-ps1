@@ -5,7 +5,7 @@
 #define MASTER_PROCESS 0
 int main(int argc,char *argv[])
 {
-    int my_rank, world_size, val, newnum, sum = 0;
+    int my_rank, world_size, val;
     MPI_Status status;
     int arr[NUMBER_OF_THREADS] = {23,12,73,53,4,32,234,36,43,93};
     
